@@ -23,7 +23,7 @@ body{overflow-x:hidden}.dashboard{min-height:100vh;background:radial-gradient(ci
 <aside class="sidebar" id="sidebar" aria-label="Admin sidebar">
 <div class="sidebar-brand"><img id="sidebarLogo" src="" alt="Sadeeque AI logo"><strong>SADEEQUE AI</strong><button class="close-sidebar" id="closeSidebar" aria-label="Close sidebar">×</button></div>
 <nav class="nav" aria-label="Admin navigation">
-<a class="active" href="./dashboard.html" data-page="Sadeeque AI Homepage">Sadeeque AI Homepage</a><a href="#" data-page="All Bots">All Bots</a><a href="#" data-page="Create Bot">Create Bot</a><a href="#" data-page="Instructions">Instructions</a><a href="#" data-page="Knowledge">Knowledge</a><a href="#" data-page="External Support Knowledge">External Support Knowledge</a><a href="#" data-page="API Keys">API Keys</a><a href="#" data-page="Settings">Settings</a><a href="#" data-page="Health">Health</a><a href="#" data-page="Webs Join">Webs Join</a>
+<a class="active" href="./dashboard.html" data-page="Sadeeque AI Homepage">Sadeeque AI Homepage</a><a href="#" data-page="All Bots">All Bots</a><a href="./create-bot.html" data-page="Create Bot">Create Bot</a><a href="#" data-page="Instructions">Instructions</a><a href="#" data-page="Knowledge">Knowledge</a><a href="#" data-page="External Support Knowledge">External Support Knowledge</a><a href="#" data-page="API Keys">API Keys</a><a href="#" data-page="Settings">Settings</a><a href="#" data-page="Health">Health</a><a href="#" data-page="Webs Join">Webs Join</a>
 </nav>
 <div class="logout-wrap"><button class="logout" id="logoutButton">Log out</button></div>
 </aside>
@@ -51,26 +51,13 @@ loadOfficialLogo();
 function openSidebar(){sidebar.classList.add('open');overlay.classList.add('open');menuButton.setAttribute('aria-expanded','true')}
 function closeDrawer(){sidebar.classList.remove('open');overlay.classList.remove('open');menuButton.setAttribute('aria-expanded','false')}
 menuButton.addEventListener('click',()=>sidebar.classList.contains('open')?closeDrawer():openSidebar());closeSidebar.addEventListener('click',closeDrawer);overlay.addEventListener('click',closeDrawer);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
-document.querySelectorAll('.nav a').forEach(link=>link.addEventListener('click',e=>{if(link.getAttribute('href')==='#')e.preventDefault();document.querySelectorAll('.nav a').forEach(x=>x.classList.remove('active'));link.classList.add('active');closeDrawer()}));
+document.querySelectorAll('.nav a').forEach(link=>link.addEventListener('click',e=>{if(link.getAttribute('href')==='#')e.preventDefault();if(link.getAttribute('href')!=='#'){return}document.querySelectorAll('.nav a').forEach(x=>x.classList.remove('active'));link.classList.add('active');closeDrawer()}));
 document.getElementById('logoutButton').addEventListener('click',async()=>{const {error}=await client.auth.signOut();if(!error)window.location.href='./'});
 const statEls={totalBots:document.getElementById('totalBots'),activeBots:document.getElementById('activeBots'),inactiveBots:document.getElementById('inactiveBots'),totalKnowledge:document.getElementById('totalKnowledge'),websJoin:document.getElementById('websJoin')};
 const masterSwitch=document.getElementById('masterSwitch'),masterStatus=document.getElementById('masterStatus');
 function renderStats(s){statEls.totalBots.textContent=String(s.total_bots);statEls.activeBots.textContent=String(s.active_bots);statEls.inactiveBots.textContent=String(s.inactive_bots);statEls.totalKnowledge.textContent=String(s.total_knowledge);statEls.websJoin.textContent=String(s.webs_join);masterSwitch.checked=Boolean(s.global_master_status);masterStatus.textContent=masterSwitch.checked?'ON':'OFF'}
-async function loadHomepage(){
- const {data:sessionData,error:sessionError}=await client.auth.getSession();
- if(sessionError||!sessionData.session){window.location.replace('./');return false}
- const {data:profile,error:profileError}=await client.from('admin_profiles').select('is_admin').eq('id',sessionData.session.user.id).maybeSingle();
- if(profileError||!profile||!profile.is_admin){await client.auth.signOut();window.location.replace('./');return false}
- const {data,error}=await client.rpc('homepage_stats');
- if(error||!data){masterStatus.textContent='Unable to load';return false}
- renderStats(data);masterSwitch.disabled=false;return true;
-}
-masterSwitch.addEventListener('change',async()=>{
- const requested=masterSwitch.checked;masterSwitch.disabled=true;masterStatus.textContent='Saving…';
- const {data,error}=await client.rpc('set_global_master_status',{p_enabled:requested});
- if(error||!data){masterSwitch.checked=!requested;masterStatus.textContent=masterSwitch.checked?'ON':'OFF';masterSwitch.disabled=false;return}
- masterSwitch.checked=Boolean(data.global_master_status);masterStatus.textContent=masterSwitch.checked?'ON':'OFF';masterSwitch.disabled=false;
-});
+async function loadHomepage(){const {data:sessionData,error:sessionError}=await client.auth.getSession();if(sessionError||!sessionData.session){window.location.replace('./');return false}const {data:profile,error:profileError}=await client.from('admin_profiles').select('is_admin').eq('id',sessionData.session.user.id).maybeSingle();if(profileError||!profile||!profile.is_admin){await client.auth.signOut();window.location.replace('./');return false}const {data,error}=await client.rpc('homepage_stats');if(error||!data){masterStatus.textContent='Unable to load';return false}renderStats(data);masterSwitch.disabled=false;return true}
+masterSwitch.addEventListener('change',async()=>{const requested=masterSwitch.checked;masterSwitch.disabled=true;masterStatus.textContent='Saving…';const {data,error}=await client.rpc('set_global_master_status',{p_enabled:requested});if(error||!data){masterSwitch.checked=!requested;masterStatus.textContent=masterSwitch.checked?'ON':'OFF';masterSwitch.disabled=false;return}masterSwitch.checked=Boolean(data.global_master_status);masterStatus.textContent=masterSwitch.checked?'ON':'OFF';masterSwitch.disabled=false});
 loadHomepage();
 </script>
 </body>
