@@ -1,6 +1,7 @@
 const SUPABASE_URL='https://elvvupvcfdstkqpdtxxr.supabase.co';
 const SUPABASE_KEY='sb_publishable_V_tJaxkTECrDUig_kFT7zw_VWPd8L4C';
 const SIGNUP_FUNCTION=`${SUPABASE_URL}/functions/v1/initial-admin-signup-v2`;
+const DASHBOARD_URL='./dashboard.html';
 
 const {createClient}=supabase;
 const client=createClient(SUPABASE_URL,SUPABASE_KEY);
@@ -58,7 +59,18 @@ login.addEventListener('submit',async event=>{
     if(error) throw error;
     if(!data.session) throw new Error('Login was not confirmed by Supabase.');
 
+    const {data:profile,error:profileError}=await client
+      .from('admin_profiles')
+      .select('id,is_admin')
+      .eq('id',data.session.user.id)
+      .eq('is_admin',true)
+      .maybeSingle();
+
+    if(profileError) throw profileError;
+    if(!profile) throw new Error('Admin access could not be confirmed.');
+
     setStatus('Login successful.','success');
+    window.location.assign(DASHBOARD_URL);
   }catch(error){
     setStatus(error.message||'Login failed.','error');
   }finally{
