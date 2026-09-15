@@ -6,36 +6,90 @@
 <title>Sadeeque AI Dashboard</title>
 <link rel="stylesheet" href="./styles.css">
 <style>
-body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5faff;color:#102033}
-.dashboard{min-height:100vh;display:flex;background:linear-gradient(135deg,#f8fcff 0%,#eef7ff 55%,#f7fbff 100%)}
-.sidebar{width:270px;min-height:100vh;padding:24px 16px;box-sizing:border-box;background:rgba(255,255,255,.72);border-right:1px solid rgba(120,170,220,.22);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:8px 0 30px rgba(40,120,190,.08)}
-.sidebar-brand{display:flex;align-items:center;gap:12px;padding:4px 10px 24px;border-bottom:1px solid rgba(120,170,220,.18);margin-bottom:18px}
-.sidebar-brand img{width:42px;height:42px;border-radius:13px;object-fit:cover}.sidebar-brand strong{font-size:16px;letter-spacing:.08em}.nav{display:flex;flex-direction:column;gap:7px}.nav a{display:block;text-decoration:none;color:#526477;padding:13px 14px;border-radius:13px;font-size:14px;font-weight:600;transition:.2s}.nav a:hover,.nav a.active{color:#087fe9;background:rgba(30,155,240,.1);box-shadow:inset 0 0 0 1px rgba(30,155,240,.1)}
-.main{flex:1;padding:32px;box-sizing:border-box}.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}.topbar h1{margin:0;font-size:30px}.admin-badge{padding:9px 14px;border-radius:999px;background:rgba(255,255,255,.7);border:1px solid rgba(120,170,220,.2);font-size:13px;color:#587086}.welcome-card{padding:34px;border-radius:24px;background:rgba(255,255,255,.68);border:1px solid rgba(255,255,255,.9);box-shadow:0 20px 50px rgba(54,130,190,.1);backdrop-filter:blur(20px)}.welcome-card h2{margin:0 0 10px;font-size:24px}.welcome-card p{margin:0;color:#65778a}
-@media(max-width:760px){.dashboard{display:block}.sidebar{width:100%;min-height:auto;padding:14px}.sidebar-brand{padding-bottom:14px;margin-bottom:10px}.nav{display:grid;grid-template-columns:1fr 1fr;gap:6px}.nav a{padding:11px;font-size:12px}.main{padding:20px}.topbar h1{font-size:24px}.admin-badge{display:none}}
+:root{--blue:#149bea;--text:#102033;--muted:#647689}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5faff;color:var(--text)}
+body{overflow-x:hidden}
+.dashboard{min-height:100vh;background:linear-gradient(135deg,#f8fcff 0%,#eef7ff 55%,#f7fbff 100%)}
+.menu-button{position:fixed;z-index:120;top:18px;left:18px;width:44px;height:44px;border:1px solid rgba(255,255,255,.9);border-radius:14px;background:rgba(255,255,255,.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 10px 28px rgba(45,125,190,.14);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;padding:0}
+.menu-button span{width:19px;height:2px;border-radius:4px;background:#203448;transition:.2s}
+.menu-button:active{transform:scale(.96)}
+.overlay{position:fixed;inset:0;z-index:100;background:rgba(25,65,100,.16);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);opacity:0;visibility:hidden;transition:opacity .22s,visibility .22s}
+.sidebar{position:fixed;z-index:110;top:0;left:0;width:285px;height:100vh;padding:22px 15px 16px;display:flex;flex-direction:column;transform:translateX(-105%);transition:transform .26s cubic-bezier(.2,.8,.2,1);background:rgba(255,255,255,.82);border-right:1px solid rgba(120,170,220,.22);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);box-shadow:18px 0 45px rgba(40,120,190,.14)}
+.sidebar.open{transform:translateX(0)}
+.overlay.open{opacity:1;visibility:visible}
+.sidebar-brand{display:flex;align-items:center;gap:11px;padding:3px 9px 20px;border-bottom:1px solid rgba(120,170,220,.18);margin-bottom:14px}
+.sidebar-brand img{width:42px;height:42px;border-radius:13px;object-fit:cover}.sidebar-brand strong{font-size:15px;letter-spacing:.08em}
+.close-sidebar{margin-left:auto;width:34px;height:34px;border:0;border-radius:11px;background:rgba(235,245,253,.75);color:#526477;font-size:24px;line-height:1;cursor:pointer}
+.nav{display:flex;flex-direction:column;gap:5px;overflow:auto;padding-right:2px}.nav a{display:flex;align-items:center;min-height:43px;text-decoration:none;color:#526477;padding:11px 13px;border-radius:13px;font-size:14px;font-weight:650;transition:.18s;cursor:pointer}.nav a:hover{color:#087fe9;background:rgba(30,155,240,.08)}.nav a.active{color:#087fe9;background:rgba(30,155,240,.12);box-shadow:inset 0 0 0 1px rgba(30,155,240,.12)}
+.logout-wrap{margin-top:auto;padding-top:14px;border-top:1px solid rgba(120,170,220,.18)}
+.logout{width:100%;border:0;background:rgba(255,255,255,.5);color:#526477;text-align:left;padding:12px 13px;border-radius:13px;font:600 14px inherit;cursor:pointer}.logout:hover{background:rgba(255,80,80,.08);color:#c23d48}
+.main{min-height:100vh;padding:86px 24px 32px;max-width:1180px;margin:0 auto}.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}.topbar h1{margin:0;font-size:30px}.admin-badge{padding:9px 14px;border-radius:999px;background:rgba(255,255,255,.7);border:1px solid rgba(120,170,220,.2);font-size:13px;color:#587086}.welcome-card{padding:34px;border-radius:24px;background:rgba(255,255,255,.68);border:1px solid rgba(255,255,255,.9);box-shadow:0 20px 50px rgba(54,130,190,.1);backdrop-filter:blur(20px)}.welcome-card h2{margin:0 0 10px;font-size:24px}.welcome-card p{margin:0;color:#65778a}
+@media(max-width:600px){.sidebar{width:min(300px,86vw)}.main{padding:82px 16px 24px}.topbar h1{font-size:25px}.admin-badge{display:none}.welcome-card{padding:25px 21px}}
 </style>
 </head>
 <body>
 <div class="dashboard">
-<aside class="sidebar">
-<div class="sidebar-brand"><img src="./sadeeque-logo.jpg" alt="Sadeeque AI"><strong>SADEEQUE AI</strong></div>
+<button class="menu-button" id="menuButton" aria-label="Open sidebar" aria-controls="sidebar" aria-expanded="false"><span></span><span></span><span></span></button>
+<div class="overlay" id="overlay"></div>
+<aside class="sidebar" id="sidebar" aria-label="Admin sidebar">
+<div class="sidebar-brand"><img src="./sadeeque-logo.jpg" alt="Sadeeque AI logo"><strong>SADEEQUE AI</strong><button class="close-sidebar" id="closeSidebar" aria-label="Close sidebar">×</button></div>
 <nav class="nav" aria-label="Admin navigation">
-<a class="active" href="./dashboard.html">Sadeeque AI Homepage</a>
-<a href="#">All Bots</a>
-<a href="#">Create Bot</a>
-<a href="#">Instructions</a>
-<a href="#">Knowledge</a>
-<a href="#">External Support Knowledge</a>
-<a href="#">API Keys</a>
-<a href="#">Settings</a>
-<a href="#">Health</a>
-<a href="#">Webs Join</a>
+<a class="active" href="./dashboard.html" data-page="Sadeeque AI Homepage">Sadeeque AI Homepage</a>
+<a href="#" data-page="All Bots">All Bots</a>
+<a href="#" data-page="Create Bot">Create Bot</a>
+<a href="#" data-page="Instructions">Instructions</a>
+<a href="#" data-page="Knowledge">Knowledge</a>
+<a href="#" data-page="External Support Knowledge">External Support Knowledge</a>
+<a href="#" data-page="API Keys">API Keys</a>
+<a href="#" data-page="Settings">Settings</a>
+<a href="#" data-page="Health">Health</a>
+<a href="#" data-page="Webs Join">Webs Join</a>
 </nav>
+<div class="logout-wrap"><button class="logout" id="logoutButton">Log out</button></div>
 </aside>
-<main class="main">
-<div class="topbar"><h1>Dashboard</h1><span class="admin-badge">Admin</span></div>
-<section class="welcome-card"><h2>Welcome to Sadeeque AI</h2><p>Your intelligent platform for creating and managing powerful AI bots.</p></section>
+<main class="main" id="mainContent">
+<div class="topbar"><h1 id="pageTitle">Dashboard</h1><span class="admin-badge">Admin</span></div>
+<section class="welcome-card"><h2 id="welcomeTitle">Welcome to Sadeeque AI</h2><p id="welcomeText">Your intelligent platform for creating and managing powerful AI bots.</p></section>
 </main>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL='https://elvvupvcfdstkqpdtxxr.supabase.co';
+const SUPABASE_KEY='sb_publishable_V_tJaxkTECrDUig_kFT7zw_VWPd8L4C';
+const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const sidebar=document.getElementById('sidebar');
+const overlay=document.getElementById('overlay');
+const menuButton=document.getElementById('menuButton');
+const closeSidebar=document.getElementById('closeSidebar');
+const pageTitle=document.getElementById('pageTitle');
+const welcomeTitle=document.getElementById('welcomeTitle');
+const navLinks=[...document.querySelectorAll('.nav a')];
+function openSidebar(){sidebar.classList.add('open');overlay.classList.add('open');menuButton.setAttribute('aria-expanded','true')}
+function closeDrawer(){sidebar.classList.remove('open');overlay.classList.remove('open');menuButton.setAttribute('aria-expanded','false')}
+menuButton.addEventListener('click',()=>sidebar.classList.contains('open')?closeDrawer():openSidebar());
+closeSidebar.addEventListener('click',closeDrawer);
+overlay.addEventListener('click',closeDrawer);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
+navLinks.forEach(link=>link.addEventListener('click',e=>{
+ if(link.getAttribute('href')==='#')e.preventDefault();
+ navLinks.forEach(item=>item.classList.remove('active'));
+ link.classList.add('active');
+ const page=link.dataset.page;
+ pageTitle.textContent=page==='Sadeeque AI Homepage'?'Dashboard':page;
+ welcomeTitle.textContent=page==='Sadeeque AI Homepage'?'Welcome to Sadeeque AI':page;
+ closeDrawer();
+}));
+document.getElementById('logoutButton').addEventListener('click',async()=>{
+ const {error}=await client.auth.signOut();
+ if(!error)window.location.href='./';
+});
+(async()=>{
+ const {data}=await client.auth.getSession();
+ if(!data.session){window.location.replace('./');return;}
+ const {data:profile,error}=await client.from('admin_profiles').select('is_admin').eq('id',data.session.user.id).maybeSingle();
+ if(error||!profile||!profile.is_admin){await client.auth.signOut();window.location.replace('./');}
+})();
+</script>
 </body>
 </html>
