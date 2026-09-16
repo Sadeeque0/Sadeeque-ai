@@ -1,7 +1,7 @@
 const SUPABASE_URL='https://elvvupvcfdstkqpdtxxr.supabase.co';
 const SUPABASE_KEY='sb_publishable_V_tJaxkTECrDUig_kFT7zw_VWPd8L4C';
 const SIGNUP_FUNCTION=`${SUPABASE_URL}/functions/v1/initial-admin-signup-v2`;
-const DASHBOARD_URL='./dashboard.html';
+const DASHBOARD_URL='./dashboard.html?v=20260916-final';
 
 const {createClient}=supabase;
 const client=createClient(SUPABASE_URL,SUPABASE_KEY);
