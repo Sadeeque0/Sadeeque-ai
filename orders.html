@@ -119,43 +119,33 @@ function render(){
 async function load(){
   $('orders').innerHTML='<div class="empty">Loading orders…</div>';
   try{
-    const sessionResult=await client.auth.getSession();
-    const session=sessionResult?.data?.session;
-    if(!session){location.href='./';return}
+    const {data:{session},error:sessionError}=await client.auth.getSession();
+    if(sessionError) throw sessionError;
+    if(!session){ location.href='./'; return; }
 
-    const ordersPromise=client.from('orders')
+    const {data,error}=await client.from('orders')
       .select('id,order_code,bot_id,user_key,customer_name,customer_phone,customer_email,customer_details,summary,important_details,status,is_pinned,is_read,source_started_at,source_completed_at,created_at,updated_at,cancelled_at')
-      .order('is_pinned',{ascending:false})
       .order('created_at',{ascending:false});
 
-    const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('Orders request timed out after 15 seconds.')),15000));
-    const ordersResult=await Promise.race([ordersPromise,timeout]);
-    const{data,error}=ordersResult;
-    if(error)throw error;
+    if(error) throw error;
 
     rows=(data||[]).map(x=>({...x,bot_name:'Bot name unavailable'}));
     render();
 
+    // Load bot names separately; failure here must never block Orders.
     const ids=[...new Set(rows.map(x=>x.bot_id).filter(Boolean))];
-    if(!ids.length)return;
-
-    // Bot names are supplementary. Never let a bot-name request keep the Orders page stuck.
-    const botPromise=client.from('bots').select('bot_id,bot_name').in('bot_id',ids);
-    const botTimeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('Bot names request timed out.')),10000));
-    try{
-      const{data:bs,error:be}=await Promise.race([botPromise,botTimeout]);
-      if(!be){
+    if(ids.length){
+      try{
+        const {data:bs}=await client.from('bots').select('bot_id,bot_name').in('bot_id',ids);
         const bots={};
         (bs||[]).forEach(b=>bots[b.bot_id]=b.bot_name);
         rows=rows.map(x=>({...x,bot_name:bots[x.bot_id]||'Bot name unavailable'}));
         render();
-      }
-    }catch(e){
-      console.warn('Orders: bot names could not be loaded:',e);
+      }catch(e){ console.warn('Bot names unavailable',e); }
     }
   }catch(error){
     console.error('Orders load failed:',error);
-    $('orders').innerHTML='<div class="empty">Unable to load orders. '+esc(error?.message||'Please try again.')+'</div>';
+    $('orders').innerHTML='<div class="empty">Unable to load orders: '+esc(error?.message||'Unknown error')+'</div>';
   }
 }
 
